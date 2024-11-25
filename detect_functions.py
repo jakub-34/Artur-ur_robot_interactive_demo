@@ -14,8 +14,11 @@ SHAKING_SENSITIVITY = 0.04
 VERTICAL_ADJUSTMENT = 0.2
 HORIZONTAL_ADJUSTMENT = 0.12
 
-def detect_person():
+def detect_person(infinite=False):
     consecutive_detections = 0
+    iteration_count = 0
+    max_iterations = 15
+
     # Initialize MediaPipe Face Detection
     mp_face_detection = mp.solutions.face_detection
     face_detection = mp_face_detection.FaceDetection(min_detection_confidence=0.5)
@@ -43,15 +46,21 @@ def detect_person():
         if cv2.waitKey(5) & 0xFF == 27:
             break
 
-        if consecutive_detections >= 15:
-            print("Person detected")
+        if infinite and consecutive_detections >= max_iterations:
             cap.release()
             cv2.destroyAllWindows()
             return True
+        
+        if not infinite:
+            iteration_count += 1
+            if iteration_count >= max_iterations:
+                return consecutive_detections >= max_iterations
+
 
     cap.release()
     cv2.destroyAllWindows()
     return False
+
 
 def head_movement():
     cap = cv2.VideoCapture(0)

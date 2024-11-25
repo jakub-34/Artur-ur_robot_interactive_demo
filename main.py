@@ -1,5 +1,6 @@
 import tkinter as tk
 import threading
+import time
 from detect_functions import detect_person, head_movement
 
 # Global variables
@@ -22,13 +23,29 @@ class App(tk.Tk):
 
     def init_screens(self):
         # Initialize all screens
-        # Black screen
         self.screens["first"] = FirstScreen(self)
         self.screens["first"].pack(fill="both", expand=True)
 
         # Game invite screen
         self.screens["invite"] = GameInviteScreen(self)
         self.screens["invite"].pack_forget()
+
+        # Tutorial screen
+        self.screens["tutorial"] = TutorialScreen(self)
+        self.screens["tutorial"].pack_forget()
+
+        # Tutorial red screen
+        self.screens["tutorial_red"] = TutorialRedScreen(self)
+        self.screens["tutorial_red"].pack_forget()
+
+        # Tutorial green screen
+        self.screens["tutorial_green"] = TutorialGreenScreen(self)
+        self.screens["tutorial_green"].pack_forget()
+
+        # Tutorial blue screen
+        self.screens["tutorial_blue"] = TutorialBlueScreen(self)
+        self.screens["tutorial_blue"].pack_forget()
+
 
     def show_screen(self, screen_name):
         # Switch between different screens
@@ -40,20 +57,43 @@ class App(tk.Tk):
             previous_screen = screen_name
 
 class FirstScreen(tk.Frame):
-    # First screen
     def __init__(self, parent):
         super().__init__(parent, bg="lightblue")
         label_main = tk.Label(self, text="Waiting for somebody to show up", font=("Helvetica", 32), bg="lightblue", fg="white")
         label_main.pack(expand=True)
 
 class GameInviteScreen(tk.Frame):
-    # Game invite screen
     def __init__(self, parent):
         super().__init__(parent, bg="lightblue")
         label_main = tk.Label(self, text="Would you like to play a game?", font=("Helvetica", 32), bg="lightblue", fg="white")
         label_main.pack(expand=True)
         label_sub = tk.Label(self, text="Nod your head to answer", font=("Helvetica", 20), bg="lightblue", fg="white")
         label_sub.pack()
+
+class TutorialScreen(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent, bg="lightblue")
+        label_main = tk.Label(self, text= "Okey, so here are the rules:\nYou will think of one of the three colors and I will try to guess it.\nHere are our possible colors:", font=("Helvetica", 32), bg="lightblue", fg="white")
+        label_main.pack(expand=True)
+
+class TutorialRedScreen(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent, bg="red")
+        label_main = tk.Label(self, text= "Red", font=("Helvetica", 56), bg="red", fg="white")
+        label_main.pack(expand=True)
+
+class TutorialGreenScreen(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent, bg="green")
+        label_main = tk.Label(self, text= "Green", font=("Helvetica", 56), bg="green", fg="white")
+        label_main.pack(expand=True)
+
+class TutorialBlueScreen(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent, bg="blue")
+        label_main = tk.Label(self, text= "Blue", font=("Helvetica", 56), bg="blue", fg="white")
+        label_main.pack(expand=True)
+
 
 def tkinter_screen_manager():
     # Manage the tkinter screen
@@ -76,7 +116,7 @@ def main():
     while True:
         # Set the current screen to first and check for person detection
         current_screen = "first"
-        if detect_person():
+        if detect_person(infinite=True):
             # Change the screen to the game invite screen
             current_screen = "invite"
 
@@ -88,7 +128,27 @@ def main():
                 current_screen = "first"
                 continue
             elif result == "YES":
-                # TODO
+                # Start tutorial
+                current_screen = "tutorial"
+                time.sleep(6)  # Wait for 6 seconds
+
+                # Check if the person is still present
+                if not detect_person():
+                    continue
+
+                # Show the red screen and red cube
+                current_screen = "tutorial_red"
+                time.sleep(2) # Simulate the time taken to show the red cube
+
+
+                # Show the green screen and green cube
+                current_screen = "tutorial_green"
+                time.sleep(2) # Simulate the time taken to show the green cube
+
+                # Show the blue screen and blue cube
+                current_screen = "tutorial_blue"
+                time.sleep(2)
+
                 break
 
 # Create a thread for the tkinter screen manager
