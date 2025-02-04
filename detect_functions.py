@@ -14,7 +14,7 @@ SHAKING_SENSITIVITY = 0.04
 VERTICAL_ADJUSTMENT = 0.2
 HORIZONTAL_ADJUSTMENT = 0.12
 
-def detect_person(infinite=False):
+def detect_person(infinite=False) -> bool:
     consecutive_detections = 0
     iteration_count = 0
     max_iterations = 15
@@ -41,10 +41,10 @@ def detect_person(infinite=False):
         else:
             consecutive_detections = 0
 
-        # Display the image
-        cv2.imshow('Person Detection', image)
-        if cv2.waitKey(5) & 0xFF == 27:
-            break
+        # Display the camera feed
+        # cv2.imshow('Person Detection', image)
+        # if cv2.waitKey(5) & 0xFF == 27:
+        #     break
 
         if infinite and consecutive_detections >= max_iterations:
             cap.release()
@@ -62,7 +62,7 @@ def detect_person(infinite=False):
     return False
 
 
-def head_movement():
+def head_movement() -> str:
     cap = cv2.VideoCapture(0)
     nodding_coordinates = []
     shaking_coordinates = []
@@ -131,10 +131,11 @@ def head_movement():
                             cap.release()
                             cv2.destroyAllWindows()
                             return "NO"
-
-            cv2.imshow('Head Movement Detection', cv2.flip(image, 1))
-            if cv2.waitKey(5) & 0xFF == 27:
-                break
+            
+            # Display the camera feed
+            # cv2.imshow('Head Movement Detection', cv2.flip(image, 1))
+            # if cv2.waitKey(5) & 0xFF == 27:
+            #    break
 
     cap.release()
     cv2.destroyAllWindows()
