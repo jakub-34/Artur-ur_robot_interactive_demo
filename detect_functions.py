@@ -1,4 +1,5 @@
 import cv2
+import time
 import mediapipe as mp
 from operator import attrgetter
 
@@ -14,7 +15,7 @@ SHAKING_SENSITIVITY = 0.04
 VERTICAL_ADJUSTMENT = 0.2
 HORIZONTAL_ADJUSTMENT = 0.12
 
-def detect_person(infinite=False) -> bool:
+def detect_person(infinite = False) -> bool:
     consecutive_detections = 0
     iteration_count = 0
     max_iterations = 15
@@ -62,7 +63,7 @@ def detect_person(infinite=False) -> bool:
     return False
 
 
-def head_movement() -> str:
+def head_movement(timed = False, timer = 0) -> str:
     cap = cv2.VideoCapture(0)
     nodding_coordinates = []
     shaking_coordinates = []
@@ -91,7 +92,13 @@ def head_movement() -> str:
         max_num_faces=1, refine_landmarks=True, min_detection_confidence=0.5, min_tracking_confidence=0.5
     ) as face_mesh:
         print("Detecting head movement...")
+        start_time = time.time() if timed else None
         while cap.isOpened():
+            if timed and (time.time() - start_time > timer):
+                cap.release()
+                cv2.destroyAllWindows()
+                return "NA"
+            
             success, image = cap.read()
             if not success:
                 print("Ignoring empty camera frame.")
