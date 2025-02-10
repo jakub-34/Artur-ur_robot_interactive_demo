@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import threading
 from robot_eyes import run_eyes
 from detect_functions import detect_person, head_movement

@@ -1,9 +1,11 @@
+#!/usr/bin/env python3
+
 import tkinter as tk
 import threading
 import time
 import random
 from detect_functions import detect_person, head_movement
-# import robot_functions as robot
+# import robot_control as robot
 
 # Global variables
 current_screen = "first"
