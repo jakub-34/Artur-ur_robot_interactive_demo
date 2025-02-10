@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 
+import sys
 from robot_control import put_pose, start
 from poses import red_setup_pose, green_setup_pose, blue_setup_pose, standby_pose
 
 
 
 def main():
-    # start()
+    # Start the robot if needed
+    if len(sys.argv) > 1 and sys.argv[1] == "-s":
+        start()
+
     print("Setting up cubes")
     put_pose(standby_pose)
     
