@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from robot_control import put_pose
+from robot_control import put_pose, Pose
 
 def main():
     print("Setting up cubes")
