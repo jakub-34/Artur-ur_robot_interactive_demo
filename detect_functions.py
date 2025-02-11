@@ -25,11 +25,9 @@ def detect_person(infinite = False) -> bool:
     face_detection = mp_face_detection.FaceDetection(min_detection_confidence=0.5)
     cap = cv2.VideoCapture(0)
 
-    print("Waiting for a person...")
     while cap.isOpened():
         success, image = cap.read()
         if not success:
-            print("Ignoring empty camera frame.")
             continue
 
         # Convert the image to RGB for face detection
@@ -91,7 +89,6 @@ def head_movement(timed = False, timer = 0) -> str:
     with mp_face_mesh.FaceMesh(
         max_num_faces=1, refine_landmarks=True, min_detection_confidence=0.5, min_tracking_confidence=0.5
     ) as face_mesh:
-        print("Detecting head movement...")
         start_time = time.time() if timed else None
         while cap.isOpened():
             if timed and (time.time() - start_time > timer):
@@ -101,7 +98,6 @@ def head_movement(timed = False, timer = 0) -> str:
             
             success, image = cap.read()
             if not success:
-                print("Ignoring empty camera frame.")
                 continue
 
             image.flags.writeable = False

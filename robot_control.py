@@ -4,10 +4,7 @@ from poses import Pose
 
 
 url = "http://192.168.104.100:5012"
-
-velocity = 50
-payload = 0
-vacuum = 80
+max_attempts = 3
 
 
 def start():
@@ -27,61 +24,78 @@ def start():
         }
     }
 
-    response = requests.put(start_url, json=data)
+    attempts = 0
 
-    if response.status_code == 200 or response.status_code == 204:
-        return
-    
-    else:
+    while attempts < max_attempts:
+        response = requests.put(start_url, json=data)
+
+        if response.status_code == 200 or response.status_code == 204:
+            return
+        
+        attempts += 1
         print("Error starting robot", file=sys.stderr)
-        sys.exit(1)
+    
+    print("Final error starting robot", file=sys.stderr)
+    sys.exit(1)
 
 
-def put_pose(position: Pose):
+def put_pose(position: Pose, payload = 0):
     pose_url = url + "/eef/pose"
 
     params = {
-        "velocity": velocity,
+        "velocity": 50,
         "payload": payload
     }
 
     data = position.to_dict()
 
-    response = requests.put(pose_url, params=params, json=data)
+    attempts = 0
 
-    if response.status_code == 200 or response.status_code == 204:
-        return
+    while attempts < max_attempts:
+        response = requests.put(pose_url, params=params, json=data)
 
-    else:
+        if response.status_code == 200 or response.status_code == 204:
+            return
+
+        attempts += 1
         print("Error setting pose", file=sys.stderr)
-        sys.exit(1)
+
+    print("Final error setting pose", file=sys.stderr)
+    sys.exit(1)
 
 
 def suck():
     suck_url = url + "/suction/suck"
 
     params = {
-        "vacuum" : vacuum
+        "vacuum" : 80
     }
 
-    response = requests.put(suck_url, params=params)
+    attempts = 0
 
-    if response.status_code == 200 or response.status_code == 204:
-        return
-    
-    else:
+    while attempts < max_attempts:
+        response = requests.put(suck_url, params=params)
+        if response.status_code == 200 or response.status_code == 204:
+            return
+        attempts += 1
         print("Error, failed to suck", file=sys.stderr)
-        sys.exit(1)
+
+    print("Final error, failed to suck", file=sys.stderr)
+    sys.exit(1)
 
 
 def release():
     release_url = url + "/suction/release"
 
-    response = requests.put(release_url)
+    attempts = 0
 
-    if response.status_code == 200 or response.status_code == 204:
-        return
-    
-    else:
+    while attempts < max_attempts:
+        response = requests.put(release_url)
+        if response.status_code == 200 or response.status_code == 204:
+            return
+        attempts += 1
         print("Error, failed to release", file=sys.stderr)
-        sys.exit(1)
+
+    
+    print("Final error, failed to release", file=sys.stderr)
+    sys.exit(1)
