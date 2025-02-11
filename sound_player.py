@@ -1,7 +1,7 @@
 import pygame
 import time
 
-def play_mp3(filename):
+def play_mp3(filename: str) -> None:
     # Initialize the mixer
     pygame.mixer.init()
 

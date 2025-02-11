@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import threading
+import sys
 from robot_eyes import run_eyes
 from detect_functions import detect_person, head_movement
 from sound_player import play_mp3
@@ -24,9 +25,27 @@ def ask_question(filename: str) -> str:
             continue
         else:
             return answer
+        
+
+def show_cube(cube: Pose, setup: Pose, sound: str) -> None:
+    robot.put_pose(setup)
+    robot.put_pose(cube)
+    robot.suck()
+    robot.put_pose(setup)
+    robot.put_pose(show_cube_pose)
+    play_mp3(sound)
+    robot.put_pose(setup)
+    robot.put_pose(cube)
+    robot.release()
+    robot.put_pose(setup)
+    robot.put_pose(standby_pose)
 
 
 def main() -> None:
+    # Start the robot if needed
+    if len(sys.argv) > 1 and sys.argv[1] == "-s":
+        robot.start()
+
     robot.put_pose(standby_pose)
 
     while True:
@@ -47,45 +66,11 @@ def main() -> None:
             if answer == "YES":
                 play_mp3("sounds/explain_rules_start.mp3")
                 
-                # Show red cube
-                robot.put_pose(red_setup_pose)
-                robot.put_pose(red_cube_pose)
-                robot.suck()
-                robot.put_pose(red_setup_pose)
-                robot.put_pose(standby_pose)
-                play_mp3("sounds/the_red_one.mp3")
-                robot.put_pose(red_setup_pose)
-                robot.put_pose(red_cube_pose)
-                robot.release()
-                robot.put_pose(red_setup_pose)
+                # Show the cubes
+                show_cube(red_cube_pose, red_setup_pose, "sounds/the_red_one.mp3")
+                show_cube(green_cube_pose, green_setup_pose, "sounds/green_one.mp3")
+                show_cube(blue_cube_pose, blue_setup_pose, "sounds/and_a_blue_one.mp3")
                 
-                # Show green cube
-                robot.put_pose(green_setup_pose)
-                robot.put_pose(green_cube_pose)
-                robot.suck()
-                robot.put_pose(green_setup_pose)
-                robot.put_pose(standby_pose)
-                play_mp3("sounds/green_one.mp3")
-                robot.put_pose(green_setup_pose)
-                robot.put_pose(green_cube_pose)
-                robot.release()
-                robot.put_pose(green_setup_pose)
-                
-                # Show blue cube
-                robot.put_pose(blue_setup_pose)
-                robot.put_pose(blue_cube_pose)
-                robot.suck()
-                robot.put_pose(blue_setup_pose)
-                robot.put_pose(standby_pose)
-                play_mp3("sounds/and_a_blue_one.mp3")
-                robot.put_pose(blue_setup_pose)
-                robot.put_pose(blue_cube_pose)
-                robot.release()
-                robot.put_pose(blue_setup_pose)
-
-                robot.put_pose(standby_pose)
-                break
-
 
 if __name__ == "__main__":
    main()
