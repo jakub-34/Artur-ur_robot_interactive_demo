@@ -1,1 +1,1 @@
-# Bakalarka
+# Artur - ur robot interactive demo
