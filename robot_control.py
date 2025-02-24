@@ -3,12 +3,12 @@ import sys
 from poses import Pose
 
 
-url = "http://192.168.104.100:5012"
+# "http://192.168.104.100:5012"
 max_attempts = 3
 
 
-def start():
-    start_url = url + "/state/start"
+def start(server_ip: str):
+    url = "http://" + server_ip + "/state/start"
 
     data = {
         "orientation": {
@@ -27,7 +27,7 @@ def start():
     attempts = 0
 
     while attempts < max_attempts:
-        response = requests.put(start_url, json=data)
+        response = requests.put(url, json=data)
 
         if response.status_code == 200 or response.status_code == 204:
             return
@@ -39,8 +39,8 @@ def start():
     sys.exit(1)
 
 
-def put_pose(position: Pose, payload = 0):
-    pose_url = url + "/eef/pose"
+def put_pose(server_ip: str, position: Pose, payload = 0):
+    url = "http://" + server_ip + "/eef/pose"
 
     params = {
         "velocity": 50,
@@ -52,7 +52,7 @@ def put_pose(position: Pose, payload = 0):
     attempts = 0
 
     while attempts < max_attempts:
-        response = requests.put(pose_url, params=params, json=data)
+        response = requests.put(url, params=params, json=data)
 
         if response.status_code == 200 or response.status_code == 204:
             return
@@ -64,8 +64,8 @@ def put_pose(position: Pose, payload = 0):
     sys.exit(1)
 
 
-def suck():
-    suck_url = url + "/suction/suck"
+def suck(server_ip: str):
+    url = "http://" + server_ip + "/suction/suck"
 
     params = {
         "vacuum" : 80
@@ -74,7 +74,7 @@ def suck():
     attempts = 0
 
     while attempts < max_attempts:
-        response = requests.put(suck_url, params=params)
+        response = requests.put(url, params=params)
         if response.status_code == 200 or response.status_code == 204:
             return
         attempts += 1
@@ -84,13 +84,13 @@ def suck():
     sys.exit(1)
 
 
-def release():
-    release_url = url + "/suction/release"
+def release(server_ip: str):
+    url = "http://" + server_ip + "/suction/release"
 
     attempts = 0
 
     while attempts < max_attempts:
-        response = requests.put(release_url)
+        response = requests.put(url)
         if response.status_code == 200 or response.status_code == 204:
             return
         attempts += 1

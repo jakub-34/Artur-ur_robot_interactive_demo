@@ -13,7 +13,16 @@ from poses import *
 
 # Start the robot eyes
 eye_thread = threading.Thread(target=run_eyes)
-eye_thread.start()
+
+
+# Print help message
+def print_help():
+    print("Usage: ./Artur.py -a <IP:PORT> [-s] [-h]")
+    print("  -a <IP:PORT>  Specify the server IP address and port (required)")
+    print("  -s            Start the robot (optional)")
+    print("  -h            Show this help message and exit")
+    sys.exit(0)
+
 
 # Ask a question to the person
 # Return the answer or "QUIT" if the person left
@@ -30,30 +39,30 @@ def ask_question(filename: str) -> str:
             return answer
         
 
-def show_cube(cube: Pose, setup: Pose, sound="none") -> None:
-    robot.put_pose(setup)
-    robot.put_pose(cube)
-    robot.suck()
-    robot.put_pose(setup, 0.12)
-    robot.put_pose(show_cube_pose, 0.12)
+def show_cube(server_ip: str, cube: Pose, setup: Pose, sound="none") -> None:
+    robot.put_pose(server_ip, setup)
+    robot.put_pose(server_ip, cube)
+    robot.suck(server_ip)
+    robot.put_pose(server_ip, setup, 0.12)
+    robot.put_pose(server_ip, show_cube_pose, 0.12)
 
     if sound != "none":
         play_mp3(sound)
 
-    robot.put_pose(setup, 0.12)
-    robot.put_pose(cube, 0.12)
-    robot.release()
-    robot.put_pose(setup)
-    robot.put_pose(standby_pose)
+    robot.put_pose(server_ip, setup, 0.12)
+    robot.put_pose(server_ip, cube, 0.12)
+    robot.release(server_ip)
+    robot.put_pose(server_ip, setup)
+    robot.put_pose(server_ip, standby_pose)
 
 
-def ask_color_question(cube: Pose, setup: Pose, color: str, game_colors) -> str:
+def ask_color_question(server_ip: str, cube: Pose, setup: Pose, color: str, game_colors) -> str:
     # Show cube
-    robot.put_pose(setup)
-    robot.put_pose(cube)
-    robot.suck()
-    robot.put_pose(setup, 0.12)
-    robot.put_pose(show_cube_pose, 0.12)
+    robot.put_pose(server_ip, setup)
+    robot.put_pose(server_ip, cube)
+    robot.suck(server_ip)
+    robot.put_pose(server_ip, setup, 0.12)
+    robot.put_pose(server_ip, show_cube_pose, 0.12)
 
     # Ask question
     answer = ask_question("sounds/color_question.mp3")
@@ -61,35 +70,35 @@ def ask_color_question(cube: Pose, setup: Pose, color: str, game_colors) -> str:
     # Person left
     if answer == "QUIT":
         # Return the cube
-        robot.put_pose(setup, 0.12)
-        robot.put_pose(cube, 0.12)
-        robot.release()
-        robot.put_pose(setup)
-        robot.put_pose(standby_pose)
+        robot.put_pose(server_ip, setup, 0.12)
+        robot.put_pose(server_ip, cube, 0.12)
+        robot.release(server_ip)
+        robot.put_pose(server_ip, setup)
+        robot.put_pose(server_ip, standby_pose)
         return "QUIT"
     
     # Person guessed the color
     elif answer == "YES":
-        robot.put_pose(win_pose)
+        robot.put_pose(server_ip, win_pose)
         play_mp3("sounds/yay.mp3")
-        robot.put_pose(standby_pose)
+        robot.put_pose(server_ip, standby_pose)
         # Return the cube
-        robot.put_pose(setup, 0.12)
-        robot.put_pose(cube, 0.12)
-        robot.release()
-        robot.put_pose(setup)
-        robot.put_pose(standby_pose)
+        robot.put_pose(server_ip, setup, 0.12)
+        robot.put_pose(server_ip, cube, 0.12)
+        robot.release(server_ip)
+        robot.put_pose(server_ip, setup)
+        robot.put_pose(server_ip, standby_pose)
         play_mp3("sounds/thank.mp3")
         return "YES"
     
     # Person didn't guess the color
     else:
         # Return the cube
-        robot.put_pose(setup, 0.12)
-        robot.put_pose(cube, 0.12)
-        robot.release()
-        robot.put_pose(setup)
-        robot.put_pose(standby_pose)
+        robot.put_pose(server_ip, setup, 0.12)
+        robot.put_pose(server_ip, cube, 0.12)
+        robot.release(server_ip)
+        robot.put_pose(server_ip, setup)
+        robot.put_pose(server_ip, standby_pose)
         game_colors.remove(color)
 
         # Try again
@@ -97,21 +106,39 @@ def ask_color_question(cube: Pose, setup: Pose, color: str, game_colors) -> str:
             play_mp3("sounds/try_again.mp3")
             return "NO"
         else:
-            robot.put_pose(show_cube_pose)
+            robot.put_pose(server_ip, show_cube_pose)
             play_mp3("sounds/lying.mp3")
-            robot.put_pose(standby_pose)
+            robot.put_pose(server_ip, standby_pose)
             return "QUIT"
     
 
 def main() -> None:
+    # Parse arguments
+    if "-h" in sys.argv:
+        print_help()
+    
+    if "-a" not in sys.argv:
+        print("Error: Missing required argument -a")
+        print_help()
+    
+    try:
+        a_index = sys.argv.index("-a")
+        server_ip = sys.argv[a_index + 1]
+    except (ValueError, IndexError):
+        print("Error: Missing value for -a")
+        print_help()
+    
+    # Check if -s is provided
+    if "-s" in sys.argv:
+        robot.start(server_ip)
+
+    # Start the robot eyes
+    eye_thread.start()
+
     next = False
     colors = ["red", "green", "blue"]
 
-    # Start the robot if needed
-    if len(sys.argv) > 1 and sys.argv[1] == "-s":
-        robot.start()
-
-    robot.put_pose(standby_pose)
+    robot.put_pose(server_ip, standby_pose)
 
     while True:
         # Check if a person is detected
@@ -132,9 +159,9 @@ def main() -> None:
                 play_mp3("sounds/explain_rules_start.mp3")
                 
                 # Show the cubes
-                show_cube(red_cube_pose, red_setup_pose, "sounds/the_red_one.mp3")
-                show_cube(green_cube_pose, green_setup_pose, "sounds/green_one.mp3")
-                show_cube(blue_cube_pose, blue_setup_pose, "sounds/and_a_blue_one.mp3")
+                show_cube(server_ip, red_cube_pose, red_setup_pose, "sounds/the_red_one.mp3")
+                show_cube(server_ip, green_cube_pose, green_setup_pose, "sounds/green_one.mp3")
+                show_cube(server_ip, blue_cube_pose, blue_setup_pose, "sounds/and_a_blue_one.mp3")
 
                 # Ask if the person is ready
                 play_mp3("sounds/explaining_finished.mp3")
@@ -167,19 +194,19 @@ def main() -> None:
 
                     # Red cube guess
                     if color == "red":
-                        answer = ask_color_question(red_cube_pose, red_setup_pose, color, game_colors)
+                        answer = ask_color_question(server_ip, red_cube_pose, red_setup_pose, color, game_colors)
                         if answer == "QUIT" or answer == "YES":
                             break
 
                     # Green cube guess
                     elif color == "green":
-                        answer = ask_color_question(green_cube_pose, green_setup_pose, color, game_colors)
+                        answer = ask_color_question(server_ip, green_cube_pose, green_setup_pose, color, game_colors)
                         if answer == "QUIT" or answer == "YES":
                             break
 
                     # Blue cube guess
                     else:
-                        answer = ask_color_question(blue_cube_pose, blue_setup_pose, color, game_colors)
+                        answer = ask_color_question(server_ip, blue_cube_pose, blue_setup_pose, color, game_colors)
                         if answer == "QUIT" or answer == "YES":
                             break
                 
