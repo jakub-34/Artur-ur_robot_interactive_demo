@@ -9,7 +9,7 @@ class Pose:
             "position": self.position
         })
     
-    def to_dict(self):
+    def to_dict(self) -> dict:
         return {
             "orientation": self.orientation,
             "position": self.position

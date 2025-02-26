@@ -7,7 +7,7 @@ from poses import Pose
 max_attempts = 3
 
 
-def start(server_ip: str):
+def start(server_ip: str) -> None:
     url = "http://" + server_ip + "/state/start"
 
     data = {
@@ -39,7 +39,7 @@ def start(server_ip: str):
     sys.exit(1)
 
 
-def put_pose(server_ip: str, position: Pose, payload = 0):
+def put_pose(server_ip: str, position: Pose, payload = 0) -> None:
     url = "http://" + server_ip + "/eef/pose"
 
     params = {
@@ -64,7 +64,7 @@ def put_pose(server_ip: str, position: Pose, payload = 0):
     sys.exit(1)
 
 
-def suck(server_ip: str):
+def suck(server_ip: str) -> None:
     url = "http://" + server_ip + "/suction/suck"
 
     params = {
@@ -84,7 +84,7 @@ def suck(server_ip: str):
     sys.exit(1)
 
 
-def release(server_ip: str):
+def release(server_ip: str) -> None:
     url = "http://" + server_ip + "/suction/release"
 
     attempts = 0

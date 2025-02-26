@@ -1,7 +1,8 @@
 import cv2
 import time
+import robot_eyes
 import mediapipe as mp
-from operator import attrgetter
+import pygame
 
 # Initialize MediaPipe Face Mesh
 mp_drawing = mp.solutions.drawing_utils
@@ -15,7 +16,7 @@ SHAKING_SENSITIVITY = 0.04
 VERTICAL_ADJUSTMENT = 0.2
 HORIZONTAL_ADJUSTMENT = 0.12
 
-def detect_person(infinite = False) -> bool:
+def detect_person(infinite = False, show_camera = False) -> bool:
     consecutive_detections = 0
     iteration_count = 0
     max_iterations = 15
@@ -24,40 +25,53 @@ def detect_person(infinite = False) -> bool:
     mp_face_detection = mp.solutions.face_detection
     face_detection = mp_face_detection.FaceDetection(min_detection_confidence=0.5)
     cap = cv2.VideoCapture(0)
-
+    
     while cap.isOpened():
         success, image = cap.read()
         if not success:
             continue
 
-        # Convert the image to RGB for face detection
+        # If show_camera is True, display the camera feed
+        if show_camera:
+            image_flipped = cv2.flip(image, 1)
+            image_rgb_preview = cv2.cvtColor(image_flipped, cv2.COLOR_BGR2RGB)
+            # Create a pygame Surface from the image
+            frame_surface = pygame.image.frombuffer(image_rgb_preview.tobytes(), (image_rgb_preview.shape[1], image_rgb_preview.shape[0]), 'RGB')
+            with robot_eyes.camera_lock:
+                robot_eyes.camera_surface = frame_surface
+                robot_eyes.display_camera = True
+
+        # Convert the image to RGB
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         results = face_detection.process(image_rgb)
 
-        # Check if a person is detected
+        # Face detection results
         if results.detections:
             consecutive_detections += 1
         else:
             consecutive_detections = 0
 
-        # Display the camera feed
-        # cv2.imshow('Person Detection', image)
-        # if cv2.waitKey(5) & 0xFF == 27:
-        #     break
-
         if infinite and consecutive_detections >= max_iterations:
             cap.release()
             cv2.destroyAllWindows()
+            if show_camera:
+                with robot_eyes.camera_lock:
+                    robot_eyes.display_camera = False
             return True
         
         if not infinite:
             iteration_count += 1
             if iteration_count >= max_iterations:
+                if show_camera:
+                    with robot_eyes.camera_lock:
+                        robot_eyes.display_camera = False
                 return consecutive_detections >= max_iterations
-
 
     cap.release()
     cv2.destroyAllWindows()
+    if show_camera:
+        with robot_eyes.camera_lock:
+            robot_eyes.display_camera = False
     return False
 
 
@@ -83,25 +97,39 @@ def head_movement(timed = False, timer = 0) -> str:
                     prev_direction = current_direction
                     peak_or_valley = current_data
             prev_data = current_data
-
         return num_direction_changes
 
-    with mp_face_mesh.FaceMesh(
+
+    success, image = cap.read()
+    if success:
+        image = cv2.flip(image, 1)
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        # Create a pygame Surface from the image
+        frame_surface = pygame.image.frombuffer(image_rgb.tobytes(), (image_rgb.shape[1], image_rgb.shape[0]), 'RGB')
+        with robot_eyes.camera_lock:
+            robot_eyes.camera_surface = frame_surface
+            robot_eyes.display_camera = True
+
+    with mp.solutions.face_mesh.FaceMesh(
         max_num_faces=1, refine_landmarks=True, min_detection_confidence=0.5, min_tracking_confidence=0.5
     ) as face_mesh:
         start_time = time.time() if timed else None
         while cap.isOpened():
             if timed and (time.time() - start_time > timer):
-                cap.release()
-                cv2.destroyAllWindows()
-                return "NA"
-            
+                break
+
             success, image = cap.read()
             if not success:
                 continue
 
-            image.flags.writeable = False
+            image = cv2.flip(image, 1)
             image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            # Create a pygame Surface from the image
+            frame_surface = pygame.image.frombuffer(image_rgb.tobytes(), (image_rgb.shape[1], image_rgb.shape[0]), 'RGB')
+            with robot_eyes.camera_lock:
+                robot_eyes.camera_surface = frame_surface
+
+            image.flags.writeable = False
             results = face_mesh.process(image_rgb)
 
             if results.multi_face_landmarks:
@@ -118,28 +146,27 @@ def head_movement(timed = False, timer = 0) -> str:
                     if len(nodding_coordinates) > FRAMES_TO_ANALYZE and len(shaking_coordinates) > FRAMES_TO_ANALYZE:
                         nodding_coordinates.pop(0)
                         shaking_coordinates.pop(0)
-
                         if (direction_changes(nodding_coordinates, "z", NODDING_SENSITIVITY * distance_adjustment) > 0
                             and direction_changes(shaking_coordinates, "z", SHAKING_SENSITIVITY * distance_adjustment) == 0
-                            and abs(max(nodding_coordinates, key=attrgetter('y')).y - min(nodding_coordinates, key=attrgetter('y')).y) 
+                            and abs(max(nodding_coordinates, key=lambda x: x.y).y - min(nodding_coordinates, key=lambda x: x.y).y) 
                                 <= VERTICAL_ADJUSTMENT * distance_adjustment):
                             cap.release()
                             cv2.destroyAllWindows()
+                            with robot_eyes.camera_lock:
+                                robot_eyes.display_camera = False
                             return "YES"
-
                         elif (direction_changes(shaking_coordinates, "z", SHAKING_SENSITIVITY * distance_adjustment) > 0
                               and direction_changes(nodding_coordinates, "z", NODDING_SENSITIVITY * distance_adjustment) == 0
-                              and abs(max(shaking_coordinates, key=attrgetter('x')).x - min(shaking_coordinates, key=attrgetter('x')).x) 
+                              and abs(max(shaking_coordinates, key=lambda x: x.x).x - min(shaking_coordinates, key=lambda x: x.x).x) 
                                 <= HORIZONTAL_ADJUSTMENT * distance_adjustment):
                             cap.release()
                             cv2.destroyAllWindows()
+                            with robot_eyes.camera_lock:
+                                robot_eyes.display_camera = False
                             return "NO"
-            
-            # Display the camera feed
-            # cv2.imshow('Head Movement Detection', cv2.flip(image, 1))
-            # if cv2.waitKey(5) & 0xFF == 27:
-            #    break
-
     cap.release()
     cv2.destroyAllWindows()
-    return None
+    with robot_eyes.camera_lock:
+        robot_eyes.camera_surface = None
+        robot_eyes.display_camera = False
+    return "NA"

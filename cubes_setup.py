@@ -6,7 +6,7 @@ from poses import red_setup_pose, green_setup_pose, blue_setup_pose, standby_pos
 
 
 # Print help message
-def print_help():
+def print_help() -> None:
     print("Usage: ./cubes_setup.py -a <IP:PORT> [-s] [-h]")
     print("  -a <IP:PORT>  Specify the server IP address and port (required)")
     print("  -s            Start the robot (optional)")
@@ -14,7 +14,7 @@ def print_help():
     sys.exit(0)
 
 
-def main():
+def main() -> None:
     # Parse arguments
     if "-h" in sys.argv:
         print_help()

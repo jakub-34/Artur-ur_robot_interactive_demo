@@ -11,6 +11,9 @@ import robot_control as robot
 from poses import *
 
 
+server_ip = ""
+
+
 # Start the robot eyes
 eye_thread = threading.Thread(target=run_eyes)
 
@@ -142,7 +145,7 @@ def main() -> None:
 
     while True:
         # Check if a person is detected
-        if detect_person(infinite = True):
+        if detect_person(infinite = True, show_camera = True):
             answer = ask_question("sounds/game_invite.mp3")
 
             # Person left

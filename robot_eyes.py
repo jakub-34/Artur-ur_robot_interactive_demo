@@ -1,11 +1,35 @@
 import pygame
 import time
 import random
+import threading
 
+
+# Global variables
+camera_surface = None
+camera_lock = threading.Lock()
+display_camera = False
+
+
+def round_corners(surface: pygame.Surface, radius: int, bg_color: tuple) -> pygame.Surface:
+    w, h = surface.get_size()
+    # Create a mask with rounded corners
+    mask = pygame.Surface((w, h), pygame.SRCALPHA)
+    mask.fill((0, 0, 0, 0))
+    pygame.draw.rect(mask, (255, 255, 255, 255), (0, 0, w, h), border_radius=radius)
+    
+    # Create a new surface with the same dimensions and fill it with the background color
+    result = pygame.Surface((w, h), pygame.SRCALPHA)
+    result.fill(bg_color)
+    
+    cam_copy = surface.convert_alpha()
+    cam_copy.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+    
+    # Blit the original surface onto the new surface
+    result.blit(cam_copy, (0, 0))
+    return result
 
 
 def run_eyes() -> None:
-
     # Initialize screen
     pygame.display.init()
 
@@ -108,17 +132,37 @@ def run_eyes() -> None:
                 right_pupil_pos[i] = max(right_pupil_pos[i] - pupil_speed, right_pupil_target[i])
 
         # Draw eyes
-        if not blinking:
+        if not display_camera:
+            if not blinking:
+                pygame.draw.rect(screen, BLUE, (*left_eye_pos, eye_width, eye_height), border_radius=corner_radius)
+                pygame.draw.rect(screen, BLUE, (*right_eye_pos, eye_width, eye_height), border_radius=corner_radius)
+
+                # Draw pupils
+                pygame.draw.rect(screen, WHITE, (*left_pupil_pos, pupil_width, pupil_height), border_radius=corner_radius // 2)
+                pygame.draw.rect(screen, WHITE, (*right_pupil_pos, pupil_width, pupil_height), border_radius=corner_radius // 2)
+
+            else:
+                pygame.draw.rect(screen, BLUE, (left_eye_pos[0], HEIGHT // 2 - eye_height // 16, eye_width, eye_height // 8), border_radius=corner_radius)
+                pygame.draw.rect(screen, BLUE, (right_eye_pos[0], HEIGHT // 2 - eye_height // 16, eye_width, eye_height // 8), border_radius=corner_radius)
+
+        # Show camera feed
+        else:
+            # Draw eyes with blue background
             pygame.draw.rect(screen, BLUE, (*left_eye_pos, eye_width, eye_height), border_radius=corner_radius)
             pygame.draw.rect(screen, BLUE, (*right_eye_pos, eye_width, eye_height), border_radius=corner_radius)
 
-            # Draw pupils
-            pygame.draw.rect(screen, WHITE, (*left_pupil_pos, pupil_width, pupil_height), border_radius=corner_radius // 2)
-            pygame.draw.rect(screen, WHITE, (*right_pupil_pos, pupil_width, pupil_height), border_radius=corner_radius // 2)
+            # Draw camera feed
+            with camera_lock:
+                if camera_surface is not None:
+                    # Define new dimensions for the camera feed
+                    new_width = eye_width - margin
+                    new_height = int((eye_height - margin) * 0.7)
+                    cam_surf = pygame.transform.scale(camera_surface, (new_width, new_height))
+                    cam_surf = round_corners(cam_surf, corner_radius, BLUE)
+                    # Set the camera feed position
+                    screen.blit(cam_surf, ((left_eye_pos[0] + (eye_width - new_width) // 2), (left_eye_pos[1] + (eye_height - new_height) // 2)))
+                    screen.blit(cam_surf, ((right_eye_pos[0] + (eye_width - new_width) // 2), (right_eye_pos[1] + (eye_height - new_height) // 2)))
 
-        else:
-            pygame.draw.rect(screen, BLUE, (left_eye_pos[0], HEIGHT // 2 - eye_height // 16, eye_width, eye_height // 8), border_radius=corner_radius)
-            pygame.draw.rect(screen, BLUE, (right_eye_pos[0], HEIGHT // 2 - eye_height // 16, eye_width, eye_height // 8), border_radius=corner_radius)
 
         # Update display
         pygame.display.flip()
