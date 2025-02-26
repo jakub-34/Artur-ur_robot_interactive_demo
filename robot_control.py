@@ -3,7 +3,6 @@ import sys
 from poses import Pose
 
 
-# "http://192.168.104.100:5012"
 max_attempts = 3
 
 
