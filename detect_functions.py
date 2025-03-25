@@ -1,3 +1,5 @@
+# Inspired by: https://github.com/paytonshaltis/head-nod-detection/blob/main/headMovements.py
+
 import cv2
 import time
 import robot_eyes
