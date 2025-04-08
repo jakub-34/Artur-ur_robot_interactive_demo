@@ -11,8 +11,8 @@ def start(server_ip: str) -> None:
 
     data = {
         "orientation": {
-            "w": 1,
-            "x": 0,
+            "w": 0.9239,
+            "x": -0.3827,
             "y": 0,
             "z": 0
         },
