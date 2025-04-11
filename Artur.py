@@ -22,7 +22,7 @@ eye_thread = threading.Thread(target=run_eyes)
 def print_help():
     print("Usage: ./Artur.py -a <IP:PORT> [-s] [-h]")
     print("  -a <IP:PORT>  Specify the server IP address and port (required)")
-    print("  -p <table_height_cm>  Specify the table height in centimeters (required)")
+    print("  -t <table_height_cm>  Specify the table height in centimeters (required)")
     print("  -s            Start the robot (optional)")
     print("  -h            Show this help message and exit")
     sys.exit(0)
@@ -132,15 +132,15 @@ def main() -> None:
         print("Error: Missing value for -a")
         print_help()
 
-    if "-p" not in sys.argv:
-        print("Error: Missing required argument -p (table height in cm)")
+    if "-t" not in sys.argv:
+        print("Error: Missing required argument -t (table height in cm)")
         print_help()
 
     try:
-        p_index = sys.argv.index("-p")
-        table_height_cm = float(sys.argv[p_index + 1])
+        t_index = sys.argv.index("-t")
+        table_height_cm = float(sys.argv[t_index + 1])
     except (ValueError, IndexError):
-        print("Error: Invalid or missing value for -p (should be a number in cm)")
+        print("Error: Invalid or missing value for -t (should be a number in cm)")
         print_help()
     
     # Check if -s is provided
