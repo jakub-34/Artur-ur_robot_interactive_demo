@@ -47,12 +47,14 @@ def run_eyes() -> None:
     WHITE = (255, 255, 255)
 
     # Eye properties
-    eye_width, eye_height = 600, 850
-    eye_spacing = 150    # Space between the eyes
+    eye_width = int(WIDTH * 0.3)
+    eye_height = int(HEIGHT * 0.8)
+    eye_spacing = int(WIDTH * 0.08)    # Space between the eyes
     corner_radius = 50  # Radius of the eye corners
 
     # Pupil properties
-    pupil_width, pupil_height = 200, 300
+    pupil_width = int(eye_width * 0.33)
+    pupil_height = int(eye_height * 0.35)
     pupil_move_interval = random.uniform(10, 15)  # Time in seconds between movements
     pupil_speed = 2  # Speed of pupil movement
     next_pupil_move_time = time.time() + pupil_move_interval
