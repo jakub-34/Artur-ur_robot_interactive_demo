@@ -64,6 +64,8 @@ def detect_person(infinite = False, show_camera = False) -> bool:
         if not infinite:
             iteration_count += 1
             if iteration_count >= max_iterations:
+                cap.release()
+                cv2.destroyAllWindows()
                 if show_camera:
                     with robot_eyes.camera_lock:
                         robot_eyes.display_camera = False
