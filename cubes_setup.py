@@ -6,7 +6,7 @@ import poses
 
 # Print help message
 def print_help() -> None:
-    print("Usage: ./cubes_setup.py -a <IP:PORT> [-s] [-h]")
+    print("Usage: ./cubes_setup.py -a <IP:PORT> -t <table_height_cm> [-s] [-h]")
     print("  -a <IP:PORT>  Specify the server IP address and port (required)")
     print("  -t <table_height_cm>  Specify the table height in centimeters (required)")
     print("  -s            Start the robot (optional)")
