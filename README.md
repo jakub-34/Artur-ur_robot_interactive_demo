@@ -46,3 +46,9 @@ Usage: ./Artur.py -a <IP:PORT> -t <table_height_cm> [-s] [-h]
  -s                   Start the robot (optional)
  -h                   Show this help message and exit
 ```
+
+## Pozor
+Jedná sa o novú verziu programu s nastaviteľnou výškou stola. Pokiaľ neboli pridané pripojiteľné kolízne objekty zo strany rozhrania ARCOR2 a ich implementácia v programe `Artur.py`, `cubes_setup.py` a `robot_control.py` je spoľahlivejšie použiť starú verziu bez možnosti nastaviteľnej výšky stola. Pre spustenie starej verzie nahraďte súbory `Artur.py`, `cubes_setup.py`, `poses.py` a `robot_control.py` súbormi s rovnakým názvom z priečinku `old_version/`. Pri spúštaní starej verzie programov `cubes_setup.py` a `Artur.py` odpadne nasledujúci argument:
+```
+-t <table_height_cm> Specify the table height in centimeters (required).
+```
